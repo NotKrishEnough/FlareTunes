@@ -198,7 +198,7 @@ class _FullPlayerState extends State<FullPlayer>{
           IconButton(onPressed:(){},icon:const Icon(Icons.skip_next_rounded,size:36)),
           IconButton(onPressed:(){},icon:const Icon(Icons.repeat_rounded)),
         ]),
-      ]))));
+      ])))));
 }
 
 class MiniPlayer extends StatelessWidget{
@@ -217,7 +217,7 @@ class MiniPlayer extends StatelessWidget{
         ]))),
         IconButton(onPressed:onToggle,icon:Icon(playing?Icons.pause_rounded:Icons.play_arrow_rounded)),
         IconButton(onPressed:(){},icon:const Icon(Icons.skip_next_rounded)),
-      ])));
+      ]))));
 }
 
 class TrackTile extends StatelessWidget{
