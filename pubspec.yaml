@@ -1,0 +1,21 @@
+name: flare_tunes
+description: A BitChord-inspired Flutter music player for FlareTunes.
+publish_to: "none"
+version: 1.0.0+1
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  just_audio: ^0.9.46
+  audio_service: ^0.18.16
+  cached_network_image: ^3.4.1
+  palette_generator: ^0.3.3+7
+  shared_preferences: ^2.5.3
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+flutter:
+  uses-material-design: true
