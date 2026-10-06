@@ -65,7 +65,7 @@ class _ShellState extends State<Shell> {
           onToggle:()=>setState(()=>playing=!playing))),
     ]),
     bottomNavigationBar:NavigationBar(height:74,backgroundColor:Colors.transparent,
-      indicatorColor:_accent.withOpacity(.16),selectedIndex:tab,
+      indicatorColor:_accent.withValues(alpha: .16),selectedIndex:tab,
       onDestinationSelected:(i)=>setState(()=>tab=i),destinations:const[
         NavigationDestination(icon:Icon(Icons.home_outlined),selectedIcon:Icon(Icons.home),label:'Home'),
         NavigationDestination(icon:Icon(Icons.search),label:'Search'),
@@ -165,7 +165,7 @@ class FullPlayer extends StatefulWidget{
 }
 class _FullPlayerState extends State<FullPlayer>{
   double progress=.32;
-  @override Widget build(BuildContext context)=>Scaffold(backgroundColor:Colors.black.withOpacity(.97),
+  @override Widget build(BuildContext context)=>Scaffold(backgroundColor:Colors.black.withValues(alpha: .97),
     body:GestureDetector(onVerticalDragEnd:(d){if((d.primaryVelocity??0)>450)Navigator.pop(context);},
       child:SafeArea(child:Padding(padding:const EdgeInsets.fromLTRB(22,10,22,24),child:Column(children:[
         Container(width:42,height:5,decoration:BoxDecoration(color:Colors.white24,borderRadius:BorderRadius.circular(99))),
@@ -206,7 +206,7 @@ class MiniPlayer extends StatelessWidget{
   const MiniPlayer({super.key,required this.track,required this.playing,required this.onTap,required this.onToggle});
   @override Widget build(BuildContext context)=>ClipRRect(borderRadius:BorderRadius.circular(24),
     child:BackdropFilter(filter:ImageFilter.blur(sigmaX:18,sigmaY:18),child:Container(height:66,padding:const EdgeInsets.all(7),
-      decoration:BoxDecoration(color:Colors.white.withOpacity(.08),border:Border.all(color:Colors.white.withOpacity(.1)),
+      decoration:BoxDecoration(color:Colors.white.withValues(alpha: .08),border:Border.all(color:Colors.white.withValues(alpha: .1)),
         borderRadius:BorderRadius.circular(24)),child:Row(children:[
         GestureDetector(onTap:onTap,child:ClipRRect(borderRadius:BorderRadius.circular(17),
           child:CachedNetworkImage(imageUrl:track.art,width:52,height:52,fit:BoxFit.cover))),
