@@ -36,45 +36,37 @@ const tracks = [
 
 class Shell extends StatefulWidget {
   const Shell({super.key});
-  @override State<Shell> createState() => _ShellState();
+  @override State<Shell> createState()=>_ShellState();
 }
-class _ShellState extends State<Shell> {
-  int tab = 0; Track? current; bool playing = false;
-  final player = AudioPlayer();
+class _ShellState extends State<Shell>{
+  int tab=0;Track? current;bool playing=false;final player=AudioPlayer();
   @override void dispose(){player.dispose();super.dispose();}
-  Future<void> play(Track t) async {
-    setState((){current=t;playing=true;});
-  }
-  void openPlayer(){
-    if(current==null)return;
-    Navigator.push(context,PageRouteBuilder(
-      opaque:false,transitionDuration:const Duration(milliseconds:420),
-      pageBuilder:(_,a,__)=>
-        FullPlayer(track:current!,playing:playing,onToggle:()=>setState(()=>playing=!playing)),
-      transitionsBuilder:(_,a,__,child)=>FadeTransition(
-        opacity:CurvedAnimation(parent:a,curve:Curves.easeOutCubic),
-        child:SlideTransition(position:Tween(begin:const Offset(0,.12),end:Offset.zero)
-          .animate(CurvedAnimation(parent:a,curve:Curves.easeOutCubic)),child:child))));
+  Future<void> play(Track t)async=>setState((){current=t;playing=true;});
+  void openPlayer(){if(current==null)return;Navigator.of(context).push(PageRouteBuilder(
+    opaque:false,transitionDuration:const Duration(milliseconds:520),reverseTransitionDuration:const Duration(milliseconds:420),
+    pageBuilder:(_,a,__)=>FullPlayer(track:current!,playing:playing,onToggle:()=>setState(()=>playing=!playing)),
+    transitionsBuilder:(_,a,__,child){final x=CurvedAnimation(parent:a,curve:Curves.easeOutCubic);
+      return FadeTransition(opacity:x,child:SlideTransition(position:Tween(begin:const Offset(0,1),end:Offset.zero).animate(x),child:child));}));
   }
   @override Widget build(BuildContext context){
     final pages=[Home(onPlay:play),Search(onPlay:play),Library(onPlay:play),const Settings()];
-    return Scaffold(body:Stack(children:[
-      pages[tab],
-      if(current!=null)Positioned(left:12,right:12,bottom:10,
-        child:MiniPlayer(track:current!,playing:playing,onTap:openPlayer,
-          onToggle:()=>setState(()=>playing=!playing))),
-    ]),
-    bottomNavigationBar:NavigationBar(height:74,backgroundColor:Colors.transparent,
-      indicatorColor:_accent.withValues(alpha: .16),selectedIndex:tab,
-      onDestinationSelected:(i)=>setState(()=>tab=i),destinations:const[
-        NavigationDestination(icon:Icon(Icons.home_outlined),selectedIcon:Icon(Icons.home),label:'Home'),
-        NavigationDestination(icon:Icon(Icons.search),label:'Search'),
-        NavigationDestination(icon:Icon(Icons.library_music_outlined),selectedIcon:Icon(Icons.library_music),label:'Library'),
-        NavigationDestination(icon:Icon(Icons.tune),label:'Settings'),
-      ]));
-  }
+    return Scaffold(extendBody:true,body:AnimatedSwitcher(
+      duration:const Duration(milliseconds:360),switchInCurve:Curves.easeOutCubic,switchOutCurve:Curves.easeInCubic,
+      transitionBuilder:(child,a)=>FadeTransition(opacity:a,child:SlideTransition(
+        position:Tween(begin:const Offset(.035,0),end:Offset.zero).animate(a),child:child)),
+      child:KeyedSubtree(key:ValueKey(tab),child:pages[tab])),
+      bottomNavigationBar:SafeArea(minimum:const EdgeInsets.fromLTRB(14,0,14,10),child:Container(height:64,
+        decoration:BoxDecoration(color:Colors.black.withValues(alpha:.72),borderRadius:BorderRadius.circular(24),
+          border:Border.all(color:Colors.white.withValues(alpha:.10)),boxShadow:[BoxShadow(blurRadius:28,spreadRadius:2,color:Colors.black.withValues(alpha:.30))]),
+        child:Row(children:List.generate(4,(i){final icons=[Icons.home_rounded,Icons.search_rounded,Icons.library_music_rounded,Icons.tune_rounded];
+          final labels=['Home','Search','Library','Settings'];final selected=tab==i;
+          return Expanded(child:InkWell(borderRadius:BorderRadius.circular(20),onTap:()=>setState(()=>tab=i),
+            child:AnimatedContainer(duration:const Duration(milliseconds:260),curve:Curves.easeOutBack,margin:const EdgeInsets.symmetric(horizontal:5,vertical:7),
+              decoration:BoxDecoration(color:selected?_accent.withValues(alpha:.15):Colors.transparent,borderRadius:BorderRadius.circular(18)),
+              child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
+                AnimatedScale(scale:selected?1.08:1,duration:const Duration(milliseconds:220),child:Icon(icons[i],size:22,color:selected?_accent:Colors.white60)),
+                AnimatedDefaultTextStyle(duration:const Duration(milliseconds:220),style:TextStyle(fontSize:selected?10:0,fontWeight:FontWeight.w700,color:_accent),child:Text(labels[i]))])));}))));}
 }
-
 class Home extends StatelessWidget {
   final Future<void> Function(Track) onPlay;
   const Home({super.key,required this.onPlay});
@@ -201,25 +193,27 @@ class _FullPlayerState extends State<FullPlayer>{
       ])))));
 }
 
-class MiniPlayer extends StatelessWidget{
+class MiniPlayer extends StatefulWidget{
   final Track track;final bool playing;final VoidCallback onTap,onToggle;
   const MiniPlayer({super.key,required this.track,required this.playing,required this.onTap,required this.onToggle});
-  @override Widget build(BuildContext context)=>ClipRRect(borderRadius:BorderRadius.circular(24),
-    child:BackdropFilter(filter:ImageFilter.blur(sigmaX:18,sigmaY:18),child:Container(height:66,padding:const EdgeInsets.all(7),
-      decoration:BoxDecoration(color:Colors.white.withValues(alpha: .08),border:Border.all(color:Colors.white.withValues(alpha: .1)),
-        borderRadius:BorderRadius.circular(24)),child:Row(children:[
-        GestureDetector(onTap:onTap,child:ClipRRect(borderRadius:BorderRadius.circular(17),
-          child:CachedNetworkImage(imageUrl:track.art,width:52,height:52,fit:BoxFit.cover))),
-        const SizedBox(width:12),Expanded(child:GestureDetector(onTap:onTap,child:Column(
-          mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[
-          Text(track.title,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontWeight:FontWeight.w700)),
-          Text(track.artist,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(color:_muted,fontSize:12)),
-        ]))),
-        IconButton(onPressed:onToggle,icon:Icon(playing?Icons.pause_rounded:Icons.play_arrow_rounded)),
-        IconButton(onPressed:(){},icon:const Icon(Icons.skip_next_rounded)),
-      ]))));
+  @override State<MiniPlayer> createState()=>_MiniPlayerState();
 }
-
+class _MiniPlayerState extends State<MiniPlayer>{
+  bool pressed=false;
+  @override Widget build(BuildContext context)=>GestureDetector(onTapDown:(_)=>setState(()=>pressed=true),onTapCancel:()=>setState(()=>pressed=false),onTapUp:(_)=>setState(()=>pressed=false),
+    child:AnimatedScale(scale:pressed?.985:1,duration:const Duration(milliseconds:120),child:ClipRRect(borderRadius:BorderRadius.circular(24),child:BackdropFilter(
+      filter:ImageFilter.blur(sigmaX:20,sigmaY:20),child:Container(height:66,padding:const EdgeInsets.all(7),
+        decoration:BoxDecoration(color:Colors.white.withValues(alpha:.085),border:Border.all(color:Colors.white.withValues(alpha:.12)),borderRadius:BorderRadius.circular(24)),
+        child:Row(children:[
+          GestureDetector(onTap:widget.onTap,child:ClipRRect(borderRadius:BorderRadius.circular(17),child:CachedNetworkImage(imageUrl:widget.track.art,width:52,height:52,fit:BoxFit.cover))),
+          const SizedBox(width:12),Expanded(child:GestureDetector(onTap:widget.onTap,child:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[
+            Text(widget.track.title,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontWeight:FontWeight.w700)),
+            Text(widget.track.artist,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(color:_muted,fontSize:12))]))),
+          AnimatedSwitcher(duration:const Duration(milliseconds:220),transitionBuilder:(child,a)=>ScaleTransition(scale:CurvedAnimation(parent:a,curve:Curves.easeOutBack),child:child),
+            child:IconButton(key:ValueKey(widget.playing),onPressed:widget.onToggle,icon:Icon(widget.playing?Icons.pause_rounded:Icons.play_arrow_rounded))),
+          IconButton(onPressed:(){},icon:const Icon(Icons.skip_next_rounded)),
+        ])))));
+}
 class TrackTile extends StatelessWidget{
   final Track track;final VoidCallback onTap;
   const TrackTile({super.key,required this.track,required this.onTap});
